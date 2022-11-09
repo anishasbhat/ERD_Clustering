@@ -6,15 +6,15 @@ import cv2
 from pytesseract import Output
 from PIL import Image
 import urllib
-from craft_text_detector import Craft
+#from craft_text_detector import Craft
 import easyocr
 USE_NNPACK=0
 
 
 counter = 0
 #xml coordinates for auto testing
-coords_8 = [[2, 1, 723, 840], [1400, 715, 2118, 1564], [2646, 1, 3359, 479], [1, 1156, 725, 1531], [1873, 1, 2282, 167], 
-[2193, 240, 2568, 488], [834, 322, 1214, 560], [675, 883, 1002, 1122], [725, 126, 859, 238], [1275, 785, 1398, 890], 
+coords_8 = [[2, 1, 723, 840], [1400, 715, 2118, 1564], [2646, 1, 3359, 479], [1, 1156, 725, 1531], [1873, 1, 2282, 167],
+[2193, 240, 2568, 488], [834, 322, 1214, 560], [675, 883, 1002, 1122], [725, 126, 859, 238], [1275, 785, 1398, 890],
 [2121, 765, 2255, 874], [2505, 4, 2641, 97], [718, 619, 846, 719], [723, 1288, 834, 1385]]
 coords_23 = [[2520, 321, 3124, 1886], [1279, 438, 1889, 803], [1306, 1117, 1901, 1478], [4, 317, 601, 1523], [791, 332, 1064, 619],
 [2031, 334, 2308, 623], [2039, 653, 2322, 923], [804, 680, 1087, 942], [781, 1200, 1108, 1523], [2041, 1178, 2358, 1496],
@@ -22,7 +22,7 @@ coords_23 = [[2520, 321, 3124, 1886], [1279, 438, 1889, 803], [1306, 1117, 1901,
 
 def test(id, ct, entity, coordinates, manual_flag):
     reader = easyocr.Reader(['en'], gpu = False)
-    
+   
     coordinates = [int(i) for i in coordinates]
 
     #get coords
@@ -42,6 +42,7 @@ def test(id, ct, entity, coordinates, manual_flag):
     im1 = im.crop((x, y, r, b))
     url = "test" + str(ct) + ".png"
     im1 = im1.save(url)
+    im1 = cv2.imread(url)
 
     #scale image for better text reading, return pytesseract text
     def scale(url, scale_percent):
@@ -51,20 +52,21 @@ def test(id, ct, entity, coordinates, manual_flag):
         height = int(img.shape[0] * scale_percent / 100)
         dim = (width, height)
         img = cv2.resize(img, dim, interpolation = cv2.INTER_CUBIC) #INTER_AREA OG
-        return reader.readtext(img)
+        return reader.readtext(img, detail=0)
         #return pytesseract.image_to_string(img)
 
-    output_str = scale(url, 75)
-    if len(output_str) <= 0: #recompute scaling, as text was found to be empty
-        output_str = scale(url, 30)
+    # output_str = scale(url, 75)
+    # if len(output_str) <= 0: #recompute scaling, as text was found to be empty
+    #     output_str = scale(url, 30)
+    output_str = reader.readtext(im1, detail=0)
 
     #add the entity
     return create_arr(entity, output_str)
 
-def create_arr(entity, input_str): 
+def create_arr(entity, input_str):
     #don't add entity to array here, I do that somewhere else
     # print(entity)
-    # print(input_str)
+    input_str = input_str[0]
     item = []
     if((entity == 'rel') | (entity == 'rel_attr')):
         temp = [line for line in input_str.split('\n') if line.strip() != '']
@@ -74,12 +76,12 @@ def create_arr(entity, input_str):
 
             if i != len(temp) - 1:
                 str += ' '
-            
+           
         item.append(str)
     else:
         item = input_str.split('\n')
         item = [line for line in input_str.split('\n') if line.strip() != '']
-    
+   
     print("Item: ", item)
 
     return item
