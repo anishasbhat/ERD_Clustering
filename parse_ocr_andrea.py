@@ -7,6 +7,9 @@ from pytesseract import Output
 from PIL import Image
 import urllib
 from craft_text_detector import Craft
+import easyocr
+USE_NNPACK=0
+
 
 counter = 0
 #xml coordinates for auto testing
@@ -18,6 +21,8 @@ coords_23 = [[2520, 321, 3124, 1886], [1279, 438, 1889, 803], [1306, 1117, 1901,
 [795, 1678, 1085, 1807], [2062, 1640, 2343, 1761]]
 
 def test(id, ct, entity, coordinates, manual_flag):
+    reader = easyocr.Reader(['en'], gpu = False)
+    
     coordinates = [int(i) for i in coordinates]
 
     #get coords
@@ -46,7 +51,8 @@ def test(id, ct, entity, coordinates, manual_flag):
         height = int(img.shape[0] * scale_percent / 100)
         dim = (width, height)
         img = cv2.resize(img, dim, interpolation = cv2.INTER_CUBIC) #INTER_AREA OG
-        return pytesseract.image_to_string(img)
+        return reader.readtext(img)
+        #return pytesseract.image_to_string(img)
 
     output_str = scale(url, 75)
     if len(output_str) <= 0: #recompute scaling, as text was found to be empty

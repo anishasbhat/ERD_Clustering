@@ -1,7 +1,7 @@
-Welcome to Team ___;s 473 Clustering ERD Project!
+Welcome to Team N/A's 473 Clustering ERD Project!
 
 Assumptions:
-we assume that all of the possible images in Collection are in the same folder as
+We assume that all of the possible images in Collection are in the same folder as
 our python file that outputs a list of entitities and the text inside the entity.
 
 Our python file that outputs a list of entitities and the text inside the entity

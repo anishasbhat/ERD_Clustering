@@ -7,6 +7,7 @@ from pytesseract import Output
 from PIL import Image
 import urllib
 from craft_text_detector import Craft
+import easyocr
 
 counter = 0
 #xml coordinates for auto testing
@@ -38,6 +39,12 @@ def test(id, ct, entity, coordinates, manual_flag):
     url = "test" + str(ct) + ".png"
     im1 = im1.save(url)
 
+    #EASY
+    reader = easyocr.Reader(['en'], gpu=False)
+    #reader = easyocr.Reader(['en'], detection='DB', recognition = 'Transformer')
+    #output_str = reader.readtext(url, detail = 0)
+    #print("SUCCESSFULLY RAN EASYOCR:" + output_str)
+    #EASY
     #scale image for better text reading, return pytesseract text
     def scale(url, scale_percent):
         img = cv2.imread(url)
@@ -50,7 +57,7 @@ def test(id, ct, entity, coordinates, manual_flag):
 
     output_str = scale(url, 75)
     if len(output_str) <= 0: #recompute scaling, as text was found to be empty
-        output_str = scale(url, 30)
+       output_str = scale(url, 30)
 
     #add the entity
     return create_arr(entity, output_str)

@@ -7,6 +7,8 @@ from pytesseract import Output
 from PIL import Image
 import urllib
 from craft_text_detector import Craft
+from easyocr import Reader
+import argparse
 
 counter = 0
 #xml coordinates for auto testing
@@ -17,6 +19,11 @@ coords_23 = [[2520, 321, 3124, 1886], [1279, 438, 1889, 803], [1306, 1117, 1901,
 [2031, 334, 2308, 623], [2039, 653, 2322, 923], [804, 680, 1087, 942], [781, 1200, 1108, 1523], [2041, 1178, 2358, 1496],
 [795, 1678, 1085, 1807], [2062, 1640, 2343, 1761]]
 
+def cleanup_text(text):
+	# strip out non-ASCII text so we can draw the text on the image
+	# using OpenCV
+	return "".join([c if ord(c) < 128 else "" for c in text]).strip()
+    
 def test(id, ct, entity, coordinates, manual_flag):
     coordinates = [int(i) for i in coordinates]
 
@@ -52,13 +59,9 @@ def test(id, ct, entity, coordinates, manual_flag):
     if len(output_str) <= 0: #recompute scaling, as text was found to be empty
         output_str = scale(url, 30)
 
-    #add the entity
     return create_arr(entity, output_str)
 
 def create_arr(entity, input_str): 
-    #don't add entity to array here, I do that somewhere else
-    # print(entity)
-    # print(input_str)
     item = []
     if((entity == 'rel') | (entity == 'rel_attr')):
         temp = [line for line in input_str.split('\n') if line.strip() != '']
@@ -73,9 +76,6 @@ def create_arr(entity, input_str):
     else:
         item = input_str.split('\n')
         item = [line for line in input_str.split('\n') if line.strip() != '']
-    
-    print("Item: ", item)
-
     return item
 
 def manual_parsing():
@@ -99,15 +99,15 @@ def manual_parsing():
 
 def auto_parsing():
     results = []
-    for coord in coords_23:
-        cur_res = test("023.png", entity, coord, False)
+    for i, coord in enumerate(coords_23):
+        cur_res = test("023.png", i, "entity", coord, False)
         if len(cur_res) > 0:
             results.append(cur_res)
     return results
 
 def main():
-    results = manual_parsing() #parsing from json
-    #results = auto_parsing() #parsing from xml file coordinate arrays
+    #results = manual_parsing() #parsing from json
+    results = auto_parsing() #parsing from xml file coordinate arrays
     print(results)
 
 if __name__ == "__main__":
