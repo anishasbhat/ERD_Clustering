@@ -19,6 +19,8 @@ coords_23 = [[2520, 321, 3124, 1886], [1279, 438, 1889, 803], [1306, 1117, 1901,
 [795, 1678, 1085, 1807], [2062, 1640, 2343, 1761]]
 
 def test(id, ct, entity, coordinates, manual_flag):
+    reader = easyocr.Reader(['en'], gpu=False)
+
     coordinates = [int(i) for i in coordinates]
 
     #get coords
@@ -40,7 +42,6 @@ def test(id, ct, entity, coordinates, manual_flag):
     im1 = im1.save(url)
 
     #EASY
-    reader = easyocr.Reader(['en'], gpu=False)
     #reader = easyocr.Reader(['en'], detection='DB', recognition = 'Transformer')
     #output_str = reader.readtext(url, detail = 0)
     #print("SUCCESSFULLY RAN EASYOCR:" + output_str)
